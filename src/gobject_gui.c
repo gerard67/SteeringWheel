@@ -31,7 +31,7 @@ on_heading_plus(GtkWidget *widget, gpointer user_data){
 	if(!gtk_widget_has_focus(widget)){
 			gtk_widget_grab_focus(widget);
 	}
-	heading_set(HEADING(user_data),heading_get(HEADING(user_data))+1);
+	heading_set(HEADING(user_data),heading_get(HEADING(user_data))+HEADING_STEP);
 }
 
 void
@@ -39,7 +39,7 @@ on_heading_moins(GtkWidget *widget, gpointer user_data){
 	if(!gtk_widget_has_focus(widget)){
 			gtk_widget_grab_focus(widget);
 	}
-	heading_set(HEADING(user_data),heading_get(HEADING(user_data))-1);
+	heading_set(HEADING(user_data),heading_get(HEADING(user_data))-HEADING_STEP);
 }
 
 void

@@ -122,8 +122,10 @@ heading_set (Heading* he, gint value){
 	HeadingPrivate *priv = HEADING_GET_PRIVATE (he);
 	value%=360;
 	if(value<0){value=360+value;}
-	value/=10;
-	value*=10;
+	int reste=value%HEADING_STEP;
+	reste=reste>HEADING_STEP/2?reste-HEADING_STEP:reste;
+	value-=reste;
+
 	if(priv->value!=value){
 		priv->value=value;
 		g_signal_emit(he,heading_signals[CHANGED],0);
