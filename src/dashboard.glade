@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkWindow" id="window_compass">
+  <object class="GtkWindow" id="window_dashboard">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Heading</property>
+    <property name="title" translatable="yes">Dashboard</property>
     <property name="destroy_with_parent">True</property>
     <child>
       <object class="GtkFrame" id="frame2">
@@ -17,9 +17,9 @@
             <property name="can_focus">False</property>
             <property name="left_padding">12</property>
             <child>
-              <object class="GtkDrawingArea" id="drawingarea_compass">
-                <property name="width_request">200</property>
-                <property name="height_request">200</property>
+              <object class="GtkDrawingArea" id="drawingarea_dashboard">
+                <property name="width_request">307</property>
+                <property name="height_request">178</property>
                 <property name="visible">True</property>
                 <property name="app_paintable">True</property>
                 <property name="can_focus">False</property>
@@ -32,17 +32,17 @@
           <object class="GtkLabel" id="label3">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">&lt;b&gt;Heading and speed:&lt;/b&gt;</property>
+            <property name="label" translatable="yes">&lt;b&gt;Vehicle and engine speeds:&lt;/b&gt;</property>
             <property name="use_markup">True</property>
           </object>
         </child>
       </object>
     </child>
   </object>
-  <object class="GtkWindow" id="window_heading">
+  <object class="GtkWindow" id="window_enginespeed">
     <property name="can_focus">False</property>
     <property name="border_width">1</property>
-    <property name="title" translatable="yes">Heading</property>
+    <property name="title" translatable="yes">Enginespeed</property>
     <property name="resizable">False</property>
     <property name="default_width">200</property>
     <property name="default_height">200</property>
@@ -64,7 +64,7 @@
                 <property name="can_focus">False</property>
                 <property name="left_padding">12</property>
                 <child>
-                  <object class="GtkLabel" id="label_heading">
+                  <object class="GtkLabel" id="label_enginespeed">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Value</property>
@@ -79,7 +79,7 @@
               <object class="GtkLabel" id="label1">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">&lt;b&gt;Heading:&lt;/b&gt;</property>
+                <property name="label" translatable="yes">&lt;b&gt;Engine speed:&lt;/b&gt;</property>
                 <property name="use_markup">True</property>
               </object>
             </child>
@@ -96,14 +96,14 @@
             <property name="can_focus">False</property>
             <property name="layout_style">center</property>
             <child>
-              <object class="GtkButton" id="button_heading_moins">
+              <object class="GtkButton" id="button_enginespeed_moins">
                 <property name="label" translatable="yes">-</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
-                <accelerator key="minus" signal="clicked"/>
                 <accelerator key="minus" signal="grab-focus"/>
+                <accelerator key="minus" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -112,7 +112,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button_heading_plus">
+              <object class="GtkButton" id="button_enginespeed_plus">
                 <property name="label" translatable="yes">+</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -136,10 +136,10 @@
       </object>
     </child>
   </object>
-  <object class="GtkWindow" id="window_speed">
+  <object class="GtkWindow" id="window_vehiclespeed">
     <property name="can_focus">False</property>
     <property name="border_width">1</property>
-    <property name="title" translatable="yes">Speed</property>
+    <property name="title" translatable="yes">Vehiclespeed</property>
     <property name="resizable">False</property>
     <property name="default_width">200</property>
     <property name="default_height">200</property>
@@ -161,7 +161,7 @@
                 <property name="can_focus">False</property>
                 <property name="left_padding">12</property>
                 <child>
-                  <object class="GtkLabel" id="label_speed">
+                  <object class="GtkLabel" id="label_vehiclespeed">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" translatable="yes">Value</property>
@@ -176,7 +176,7 @@
               <object class="GtkLabel" id="label5">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">&lt;b&gt;Speed:&lt;/b&gt;</property>
+                <property name="label" translatable="yes">&lt;b&gt;Vehicule speed:&lt;/b&gt;</property>
                 <property name="use_markup">True</property>
               </object>
             </child>
@@ -193,14 +193,14 @@
             <property name="can_focus">False</property>
             <property name="layout_style">center</property>
             <child>
-              <object class="GtkButton" id="button_speed_moins">
+              <object class="GtkButton" id="button_vehiclespeed_moins">
                 <property name="label" translatable="yes">-</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
-                <accelerator key="minus" signal="clicked"/>
                 <accelerator key="minus" signal="grab-focus"/>
+                <accelerator key="minus" signal="clicked"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -209,7 +209,7 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="button_speed_plus">
+              <object class="GtkButton" id="button_vehiclespeed_plus">
                 <property name="label" translatable="yes">+</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>

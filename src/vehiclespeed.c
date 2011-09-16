@@ -5,13 +5,13 @@
  *      Author: mathieu
  */
 
-#include "speed.h"
+#include "vehiclespeed.h"
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE STRUCTURE + ACCESS MACRO
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-#define SPEED_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj),TYPE_SPEED,SpeedPrivate))
-struct _SpeedPrivate
+#define VEHICLESPEED_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj),TYPE_VEHICLESPEED,VehiclespeedPrivate))
+struct _VehiclespeedPrivate
 {
 	gint value;
 };
@@ -23,27 +23,27 @@ enum {
   CHANGED,
   LAST_SIGNAL
 };
-static guint speed_signals[LAST_SIGNAL] = {0};
+static guint vehiclespeed_signals[LAST_SIGNAL] = {0};
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE FUNCTION PROTOTYPES */
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-static void speed_finalize (GObject* obj);
-static void speed_dispose (GObject* obj);
+static void vehiclespeed_finalize (GObject* obj);
+static void vehiclespeed_dispose (GObject* obj);
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // TYPE DEFINITION
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-G_DEFINE_TYPE (Speed, speed, G_TYPE_OBJECT)
+G_DEFINE_TYPE (Vehiclespeed, vehiclespeed, G_TYPE_OBJECT)
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // CONSTRUCTORS
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-static void speed_class_init (SpeedClass *klass)
+static void vehiclespeed_class_init (VehiclespeedClass *klass)
 {
 	GObjectClass	*g_object_class;
 	/*add a private structure*/
-	g_type_class_add_private(klass,sizeof(SpeedPrivate));
+	g_type_class_add_private(klass,sizeof(VehiclespeedPrivate));
 
 	/*get the parent class */
 	g_object_class = G_OBJECT_CLASS(klass);
@@ -51,14 +51,14 @@ static void speed_class_init (SpeedClass *klass)
 	/* Hook overridable methods  (Setup the default handler for virtual method) */
 
 	/* Hook finalization functions */
-	g_object_class->dispose = speed_dispose; /* instance destructor, reverse of instance init */
-	g_object_class->finalize = speed_finalize; /* class finalization, reverse of class init */
+	g_object_class->dispose = vehiclespeed_dispose; /* instance destructor, reverse of instance init */
+	g_object_class->finalize = vehiclespeed_finalize; /* class finalization, reverse of class init */
 
 	/*registering signals*/
-	speed_signals[CHANGED]=
+	vehiclespeed_signals[CHANGED]=
 			g_signal_new(
 					"changed",
-					TYPE_SPEED,
+					TYPE_VEHICLESPEED,
 					G_SIGNAL_RUN_LAST | G_SIGNAL_NO_RECURSE | G_SIGNAL_NO_HOOKS,
 					NULL /* closure */,
 					NULL /* accumulator */,
@@ -70,10 +70,10 @@ static void speed_class_init (SpeedClass *klass)
 			);
 }
 
-static void speed_init (Speed *self)
+static void vehiclespeed_init (Vehiclespeed *self)
 {
 	/* Retrieve the private data structure */
-	SpeedPrivate *priv=SPEED_GET_PRIVATE(self);
+	VehiclespeedPrivate *priv=VEHICLESPEED_GET_PRIVATE(self);
 
 	/*
 	 * Initialize all public and private members to reasonable default values.
@@ -81,44 +81,44 @@ static void speed_init (Speed *self)
 	/* Initialize public fields */
 
 	/* Initialize private fields */
-	priv->value = 100;
+	priv->value = 0;
 }
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // DESTRUCTORS
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-static void speed_finalize (GObject* obj)
+static void vehiclespeed_finalize (GObject* obj)
 {
 	/* Reverse what was allocated by class init */
-	G_OBJECT_CLASS (speed_parent_class)->finalize (obj);
+	G_OBJECT_CLASS (vehiclespeed_parent_class)->finalize (obj);
 }
 
-static void speed_dispose (GObject* obj)
+static void vehiclespeed_dispose (GObject* obj)
 {
 	/* Reverse what was allocated by instance init */
-	Speed *self = SPEED (obj);
-	SpeedPrivate *priv = SPEED_GET_PRIVATE (self);
-	G_OBJECT_CLASS (speed_parent_class)->dispose (obj);
+	Vehiclespeed *self = VEHICLESPEED (obj);
+	VehiclespeedPrivate *priv = VEHICLESPEED_GET_PRIVATE (self);
+	G_OBJECT_CLASS (vehiclespeed_parent_class)->dispose (obj);
 }
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-gint speed_get (Speed* sp)
+gint vehiclespeed_get (Vehiclespeed* sp)
 {
-   g_return_val_if_fail (IS_SPEED (sp), NULL);
-   SpeedPrivate *priv = SPEED_GET_PRIVATE (sp);
+   g_return_val_if_fail (IS_VEHICLESPEED (sp), NULL);
+   VehiclespeedPrivate *priv = VEHICLESPEED_GET_PRIVATE (sp);
    return priv->value;
 }
 
-void speed_set (Speed* sp, gint value){
-	g_return_if_fail (IS_SPEED (sp));
-	SpeedPrivate *priv = SPEED_GET_PRIVATE (sp);
-	value=value>MAX_SPEED?MAX_SPEED:value;
+void vehiclespeed_set (Vehiclespeed* sp, gint value){
+	g_return_if_fail (IS_VEHICLESPEED (sp));
+	VehiclespeedPrivate *priv = VEHICLESPEED_GET_PRIVATE (sp);
+	value=value>MAX_VEHICLESPEED?MAX_VEHICLESPEED:value;
 	value=value<0?0:value;
 	if(priv->value!=value){
 		priv->value=value;
-		g_signal_emit(sp,speed_signals[CHANGED],0);
+		g_signal_emit(sp,vehiclespeed_signals[CHANGED],0);
 	}
 }
 

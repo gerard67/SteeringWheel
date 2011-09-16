@@ -10,215 +10,320 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <termios.h>
+#include <regex.h>
+
+#include <math.h>
+
 #include <gtk-3.0/gtk/gtk.h>
 #include <cairo/cairo.h>
-#include <math.h>
-#include "heading.h"
-#include "speed.h"
+#include <librsvg-2.0/librsvg/rsvg.h>
+#include <librsvg-2.0/librsvg/rsvg-cairo.h>
+
+#include "enginespeed.h"
+#include "vehiclespeed.h"
+
+/*parameters to read serial scanbus*/
+#define BAUDRATE B9600
+#define MODEMDEVICE "/dev/ttyUSB0"
+#define _POSIX_SOURCE 1
+volatile int STOP=FALSE;
 
 
-typedef struct _Compas_data
+typedef struct _Dashboard_data
 {
-	Heading *h;
-	Speed *s;
-}Compas_data;
+	Enginespeed *h;
+	Vehiclespeed *s;
+	RsvgHandle *cursor_big;
+	RsvgHandle *cursor_small;
+	RsvgHandle *dashboard_back;
+	RsvgHandle *dashboard_top;
+}Dashboard_data;
 
 
 static gboolean MOUSE_PRESSED=FALSE;
 
-void
-on_heading_plus(GtkWidget *widget, gpointer user_data){
-	if(!gtk_widget_has_focus(widget)){
-			gtk_widget_grab_focus(widget);
+int
+read_canbus(Dashboard_data *dashboard_data )
+{
+	Enginespeed *h1=dashboard_data->h;
+	Vehiclespeed *s1=dashboard_data->s;
+
+	int fd,res,regcom;
+	regex_t reg_speed;
+	size_t nmatch = 4;
+	regmatch_t pmatch[4];
+	struct termios oldtio,newtio;
+	char buf[255];//="$FMS1,8057.66,539281,338.6,24,864,20,0,28.8,0,0,0,0,54.8,68,1.04,0,4410,0,0,12140";
+	char str_esp[5]="1",str_vsp[5]="1";
+
+	//gdk_threads_enter();
+
+	printf("-- TESTING USB-TO-SERIAL PORT --\n");
+	fd = open(MODEMDEVICE, O_RDONLY | O_NOCTTY);
+	if(fd < 0 ){perror("open_port: Unable to open modem - ");}
+	else{
+
+		/*compiling regular expression*/
+		if (0 != (regcom=regcomp(&reg_speed,"^\\$FMS1(,[0-9]+[.]?[0-9]*){3},([0-9]+)[.]?[0-9]*,([0-9]+)[.]?[0-9]*,.*$",REG_EXTENDED))){
+			printf("regcomp() failed, returning nonzero (%d)\n", regcomp);
+			exit(EXIT_FAILURE);
+		};
+
+		tcgetattr(fd,&oldtio);
+		bzero(&newtio,sizeof(newtio));
+		newtio.c_cflag=BAUDRATE|CRTSCTS|CS8|CLOCAL|CREAD;
+
+		newtio.c_iflag = IGNPAR | ICRNL;
+
+		newtio.c_oflag = 0;
+
+		newtio.c_lflag = ICANON;
+
+		newtio.c_cc[VINTR]    = 0;
+		newtio.c_cc[VQUIT]    = 0;
+		newtio.c_cc[VERASE]   = 0;
+		newtio.c_cc[VKILL]    = 0;
+		newtio.c_cc[VEOF]     = 4;
+		newtio.c_cc[VTIME]    = 0;
+		newtio.c_cc[VMIN]     = 1;
+		newtio.c_cc[VSWTC]    = 0;
+		newtio.c_cc[VSTART]   = 0;
+		newtio.c_cc[VSTOP]    = 0;
+		newtio.c_cc[VSUSP]    = 0;
+		newtio.c_cc[VEOL]     = 0;
+		newtio.c_cc[VREPRINT] = 0;
+		newtio.c_cc[VDISCARD] = 0;
+		newtio.c_cc[VWERASE]  = 0;
+		newtio.c_cc[VLNEXT]   = 0;
+		newtio.c_cc[VEOL2]    = 0;
+
+
+		tcflush(fd, TCIFLUSH);
+		tcsetattr(fd,TCSANOW,&newtio);
+
+
+		while (STOP==FALSE) {
+			res = read(fd,buf,255);
+			buf[res]=0;
+			if(0!=(regcom=regexec(&reg_speed, buf, nmatch, pmatch, 0))){
+				//printf("Frame received does not match speeds : \"%s\"",buf);
+			}else{
+				strncpy(str_vsp,buf+pmatch[2].rm_so,pmatch[2].rm_eo-pmatch[2].rm_so);
+				strncpy(str_esp,buf+pmatch[3].rm_so,pmatch[3].rm_eo-pmatch[3].rm_so);
+				str_esp[pmatch[3].rm_eo-pmatch[3].rm_so]='\0';
+				str_vsp[pmatch[2].rm_eo-pmatch[2].rm_so]='\0';
+				printf("%d->%d\n",pmatch[3].rm_so,pmatch[3].rm_eo);
+				printf("%s",buf);
+				printf("vitesse camion : \"%s\" , vitesse moteur : \"%s\"\n",str_vsp,str_esp);
+				enginespeed_set(h1,atoi(str_esp));
+				vehiclespeed_set(s1,atoi(str_vsp));
+			}
+
+			if (buf[0]=='z') STOP=TRUE;
+		}
+		tcsetattr(fd,TCSANOW,&oldtio);
+
+		regfree(&reg_speed);
 	}
-	heading_set(HEADING(user_data),heading_get(HEADING(user_data))+HEADING_STEP);
+
+	//gdk_threads_leave();
+	return(1);
 }
 
 void
-on_heading_moins(GtkWidget *widget, gpointer user_data){
-	if(!gtk_widget_has_focus(widget)){
-			gtk_widget_grab_focus(widget);
-	}
-	heading_set(HEADING(user_data),heading_get(HEADING(user_data))-HEADING_STEP);
+on_enginespeed_plus(GtkWidget *widget, Enginespeed *h){
+	if(!gtk_widget_has_focus(widget)){gtk_widget_grab_focus(widget);}
+	enginespeed_set(h,enginespeed_get(h)+50);
 }
 
 void
-on_speed_plus(GtkWidget *widget, gpointer user_data){
-	if(!gtk_widget_has_focus(widget)){
-			gtk_widget_grab_focus(widget);
-	}
-	speed_set(SPEED(user_data),speed_get(SPEED(user_data))+1);
+on_enginespeed_moins(GtkWidget *widget, Enginespeed *h){
+	if(!gtk_widget_has_focus(widget)){gtk_widget_grab_focus(widget);}
+	enginespeed_set(h,enginespeed_get(h)-50);
 }
 
 void
-on_speed_moins(GtkWidget *widget, gpointer user_data){
-	if(!gtk_widget_has_focus(widget)){
-			gtk_widget_grab_focus(widget);
-	}
-	speed_set(SPEED(user_data),speed_get(SPEED(user_data))-1);
+on_vehiclespeed_plus(GtkWidget *widget, Vehiclespeed *s){
+	if(!gtk_widget_has_focus(widget)){gtk_widget_grab_focus(widget);}
+	vehiclespeed_set(s,vehiclespeed_get(s)+1);
 }
 
 void
-on_heading_changed(Heading *obj,GtkLabel *label){
-	gchar buf[3];
-	g_snprintf(buf,4,"%d",heading_get(obj));
+on_vehiclespeed_moins(GtkWidget *widget, Vehiclespeed *s){
+	if(!gtk_widget_has_focus(widget)){gtk_widget_grab_focus(widget);}
+	vehiclespeed_set(s,vehiclespeed_get(s)-1);
+}
+
+void
+on_enginespeed_changed(Enginespeed *h,GtkLabel *label){
+	gchar buf[4];
+	g_snprintf(buf,5,"%d",enginespeed_get(h));
 	gtk_label_set_text(label, buf);
 }
 
 void
-on_speed_changed(Speed *obj,GtkLabel *label){
+on_vehiclespeed_changed(Vehiclespeed *s,GtkLabel *label){
 	gchar buf[3];
-	g_snprintf(buf,4,"%d",speed_get(obj));
+	g_snprintf(buf,4,"%d",vehiclespeed_get(s));
 	gtk_label_set_text(label, buf);
 }
 
 void
-on_compass_draw_changed(GObject *obj,GtkDrawingArea *drawing){
+on_dashboard_draw_changed(GObject *obj,GtkDrawingArea *drawing){
 	gtk_widget_queue_draw(GTK_WIDGET(drawing));
 }
 
-
 gboolean
-on_compass_motion(GtkWidget *widget,GdkEventMotion *event,Compas_data *user_data){
-	if(MOUSE_PRESSED){
-		return set_all_from_compass(widget,(guint)event->x,(guint)event->y,user_data);
-	}
-	return FALSE;
-}
-
-gboolean
-on_compass_pressed(GtkWidget *widget,GdkEventButton *event,Compas_data *user_data){
-	MOUSE_PRESSED=TRUE;
-	return set_all_from_compass(widget,(guint)event->x,(guint)event->y,user_data);
-}
-gboolean
-on_compass_released(GtkWidget *widget,GdkEventButton *event,Compas_data *user_data){
-	MOUSE_PRESSED=FALSE;
-	return FALSE;
-}
-
-gboolean
-set_all_from_compass(GtkWidget *widget,guint cx,guint cy,Compas_data *user_data){
-	guint width, height;
-	gdouble x,y,teta,speed;
-	Heading *h1=HEADING(user_data->h);
-	Speed *s1=SPEED(user_data->s);
-	width = gtk_widget_get_allocated_width (widget);
-	height = gtk_widget_get_allocated_height (widget);
-	x=(int)cx-MIN(width,height)/2.;
-	y=(int)cy-MIN(width,height)/2.;
-	teta=180/G_PI*acos(x/sqrt(pow(x,2)+pow(y,2)));
-	speed=sqrt(pow(x,2)+pow(y,2))*MAX_SPEED/(MIN(width,height)/2.);;
-
-	if(asin(y/sqrt(pow(x,2)+pow(y,2))<0))teta=360-teta;
-	heading_set(h1,teta);
-	speed_set(s1,speed);
-	return FALSE;
-}
-
-gboolean
-compass_draw(GtkWidget *widget, cairo_t *cr, Compas_data *user_data)
+dashboard_draw(GtkWidget *widget, cairo_t *cr, Dashboard_data *user_data)
 {
-	const gint RADIUS=10;
-	guint width, height;
+	const gint RADIUS=6;
+	gdouble width, height,drawing_scale;
+	guint draw_height,draw_width;
+	Enginespeed *h1=user_data->h;
+	Vehiclespeed *s1=user_data->s;
 
-	Heading *h1=HEADING(user_data->h);
-	Speed *s1=SPEED(user_data->s);
+	width=307;
+	height=178;
+	draw_width = gtk_widget_get_allocated_width (widget);
+	draw_height = gtk_widget_get_allocated_height (widget);
+	drawing_scale=MIN(draw_width/width,draw_height/height);
 
-	width = gtk_widget_get_allocated_width (widget);
-	height = gtk_widget_get_allocated_height (widget);
+	cairo_scale(cr,drawing_scale,drawing_scale);
 
-	cairo_set_source_rgb(cr, 0.69, 0.19, 0);
-	cairo_arc (cr,
-			(double)(width/2.+((MIN(width,height)/2.)/MAX_SPEED*speed_get(s1))*cos(G_PI/180*heading_get(h1))),
-			(double)(height/2.+((MIN(width,height)/2.)/MAX_SPEED*speed_get(s1))*sin(G_PI/180*heading_get(h1))),
-			RADIUS,
-			0, 2*G_PI);
-	cairo_stroke_preserve(cr);
-	cairo_set_source_rgb(cr, 0.3, 0.4, 0.6);
-	cairo_fill (cr);
+	cairo_save(cr);
+	rsvg_handle_render_cairo(user_data->dashboard_back,cr);
+	cairo_restore(cr);
+
+	cairo_save(cr);
+	cairo_translate(cr,103.,110.);
+	cairo_rotate(cr,(244/160.*vehiclespeed_get(s1)-122)*G_PI/180);
+	cairo_translate(cr,-16.5/2.,-177./2.);
+	rsvg_handle_render_cairo(user_data->cursor_big,cr);
+	cairo_restore(cr);
+
+	cairo_save(cr);
+	cairo_translate(cr,237.,73.);
+	cairo_rotate(cr,(237/3000.*enginespeed_get(h1)-40)*G_PI/180);
+	cairo_translate(cr,-16.5/2.,-105.5/2.);
+	rsvg_handle_render_cairo(user_data->cursor_small,cr);
+	cairo_restore(cr);
+
+	cairo_save(cr);
+	rsvg_handle_render_cairo(user_data->dashboard_top,cr);
+	cairo_restore(cr);
+
 	return FALSE;
 }
 
 int
 main(int argc,char *argv[]) {
 
+		GError *error=NULL;
+		GThread *readcanbus;
 
-	g_type_init();
-	Heading *h1=NULL;
-	Speed *s1=NULL;
-	s1=g_object_new(TYPE_SPEED,NULL);
-	h1=g_object_new(TYPE_HEADING,NULL);
-	heading_set(h1,1);
-	speed_set(s1,1);
+		/*Gobject constructs*/
+		g_type_init();
+		Enginespeed *h1=NULL;
+		Vehiclespeed *s1=NULL;
+		s1=g_object_new(TYPE_VEHICLESPEED,NULL);
+		h1=g_object_new(TYPE_ENGINESPEED,NULL);
+		enginespeed_set(h1,1);
+		vehiclespeed_set(s1,1);
 
-	/*GTK construct ...*/
-	GtkBuilder *builder;
-	GtkWindow *window_heading,*window_compass,*window_speed;
-	GtkLabel *label_speed,*label_heading;
-	GtkButton *button[4];
-	GtkDrawingArea *drawingarea_compass;
-	GError *error=NULL;
+		/*GTK construct ...*/
+		GtkBuilder *builder;
+		GtkWindow *window_enginespeed,*window_dashboard,*window_vehiclespeed;
+		GtkLabel *label_vehiclespeed,*label_enginespeed;
+		GtkButton *button[4];
+		GtkDrawingArea *drawingarea_dashboard;
 
-	gtk_init(&argc, &argv);
+		if(!g_thread_supported()){
+			g_thread_init(NULL);
+		}
 
-	builder=gtk_builder_new();
-	if(!gtk_builder_add_from_file(builder,DATADIR "/heading.glade",&error)){
-		g_warning("%s",error->message);
-		g_free(error);
-		return 1;
-	}
+		gdk_threads_init();
 
-	/*retrieve the useful widgets from the builder*/
-	window_heading = GTK_WINDOW(gtk_builder_get_object(builder,"window_heading"));
-	window_speed = GTK_WINDOW(gtk_builder_get_object(builder,"window_speed"));
-	window_compass = GTK_WINDOW(gtk_builder_get_object(builder,"window_compass"));
-	label_heading = GTK_LABEL(gtk_builder_get_object(builder,"label_heading"));
-	label_speed = GTK_LABEL(gtk_builder_get_object(builder,"label_speed"));
-	drawingarea_compass = GTK_DRAWING_AREA(gtk_builder_get_object(builder,"drawingarea_compass"));
-	button[0]=GTK_BUTTON(gtk_builder_get_object(builder,"button_heading_plus"));
-	button[1]=GTK_BUTTON(gtk_builder_get_object(builder,"button_heading_moins"));
-	button[2]=GTK_BUTTON(gtk_builder_get_object(builder,"button_speed_plus"));
-	button[3]=GTK_BUTTON(gtk_builder_get_object(builder,"button_speed_moins"));
+		gdk_threads_enter();
 
-	/* connecting signals */
-	/*control signals*/
-	g_signal_connect(window_compass,"destroy",G_CALLBACK(gtk_main_quit),NULL);
-	g_signal_connect(window_heading,"destroy",G_CALLBACK(gtk_main_quit),NULL);
-	g_signal_connect(window_speed,"destroy",G_CALLBACK(gtk_main_quit),NULL);
+		gtk_init(&argc, &argv);
 
-	Compas_data compas_data;
-	compas_data.h=h1;
-	compas_data.s=s1;
-	g_signal_connect(drawingarea_compass,"draw",G_CALLBACK(compass_draw),&compas_data);
+		builder=gtk_builder_new();
+		if(!gtk_builder_add_from_file(builder,DATADIR "/dashboard.glade",&error)){
+			g_warning("%s",error->message);
+			g_free(error);
+			exit(EXIT_FAILURE);
+		}
 
-	/*signals from the views to the model*/
-	g_signal_connect(button[0],"clicked",G_CALLBACK(on_heading_plus),h1);
-	g_signal_connect(button[1],"clicked",G_CALLBACK(on_heading_moins),h1);
-	g_signal_connect(button[2],"clicked",G_CALLBACK(on_speed_plus),s1);
-	g_signal_connect(button[3],"clicked",G_CALLBACK(on_speed_moins),s1);
-	g_signal_connect(drawingarea_compass,"button-press-event",G_CALLBACK(on_compass_pressed),&compas_data);
-	g_signal_connect(drawingarea_compass,"button-release-event",G_CALLBACK(on_compass_released),&compas_data);
-	g_signal_connect(drawingarea_compass,"motion-notify-event",G_CALLBACK(on_compass_motion),&compas_data);
+		/*retrieve the useful widgets from the builder*/
+		window_enginespeed = GTK_WINDOW(gtk_builder_get_object(builder,"window_enginespeed"));
+		window_vehiclespeed = GTK_WINDOW(gtk_builder_get_object(builder,"window_vehiclespeed"));
+		window_dashboard = GTK_WINDOW(gtk_builder_get_object(builder,"window_dashboard"));
+		label_enginespeed = GTK_LABEL(gtk_builder_get_object(builder,"label_enginespeed"));
+		label_vehiclespeed = GTK_LABEL(gtk_builder_get_object(builder,"label_vehiclespeed"));
+		drawingarea_dashboard = GTK_DRAWING_AREA(gtk_builder_get_object(builder,"drawingarea_dashboard"));
+		button[0]=GTK_BUTTON(gtk_builder_get_object(builder,"button_enginespeed_plus"));
+		button[1]=GTK_BUTTON(gtk_builder_get_object(builder,"button_enginespeed_moins"));
+		button[2]=GTK_BUTTON(gtk_builder_get_object(builder,"button_vehiclespeed_plus"));
+		button[3]=GTK_BUTTON(gtk_builder_get_object(builder,"button_vehiclespeed_moins"));
 
-	/*signals from the model to the views*/
-	g_signal_connect(h1,"changed",G_CALLBACK(on_heading_changed),label_heading);
-	g_signal_connect(s1,"changed",G_CALLBACK(on_speed_changed),label_speed);
-	g_signal_connect(h1,"changed",G_CALLBACK(on_compass_draw_changed),drawingarea_compass);
-	g_signal_connect(s1,"changed",G_CALLBACK(on_compass_draw_changed),drawingarea_compass);
 
-	/*display the views*/
-	gtk_widget_show(GTK_WIDGET(window_compass));
-	gtk_widget_show(GTK_WIDGET(window_heading));
-	gtk_widget_show(GTK_WIDGET(window_speed));
+		/* connecting signals */
+		/*control signals*/
+		g_signal_connect(window_dashboard,"destroy",G_CALLBACK(gtk_main_quit),NULL);
+		g_signal_connect(window_enginespeed,"destroy",G_CALLBACK(gtk_main_quit),NULL);
+		g_signal_connect(window_vehiclespeed,"destroy",G_CALLBACK(gtk_main_quit),NULL);
 
-	/*event loop*/
-	gtk_main();
+		Dashboard_data dashboard_data;
+		dashboard_data.h=h1;
+		dashboard_data.s=s1;
+		dashboard_data.cursor_big=rsvg_handle_new_from_file(DATADIR "/counter_cursor_big.svg",&error);
+		dashboard_data.cursor_small=rsvg_handle_new_from_file(DATADIR "/counter_cursor_small.svg",&error);
+		dashboard_data.dashboard_back=rsvg_handle_new_from_file(DATADIR "/dashboard_back.svg",&error);
+		dashboard_data.dashboard_top=rsvg_handle_new_from_file(DATADIR "/dashboard_top.svg",&error);
+		g_signal_connect(drawingarea_dashboard,"draw",G_CALLBACK(dashboard_draw),&dashboard_data);
 
-	/*cleaning up*/
-	g_object_unref(h1);
-	g_object_unref(s1);
-	g_object_unref(G_OBJECT(builder));
+		/*signals from the views to the model*/
+		g_signal_connect(button[0],"clicked",G_CALLBACK(on_enginespeed_plus),h1);
+		g_signal_connect(button[1],"clicked",G_CALLBACK(on_enginespeed_moins),h1);
+		g_signal_connect(button[2],"clicked",G_CALLBACK(on_vehiclespeed_plus),s1);
+		g_signal_connect(button[3],"clicked",G_CALLBACK(on_vehiclespeed_moins),s1);
 
-	return EXIT_SUCCESS;
+		/*signals from the model to the views*/
+		g_signal_connect(h1,"changed",G_CALLBACK(on_enginespeed_changed),label_enginespeed);
+		g_signal_connect(s1,"changed",G_CALLBACK(on_vehiclespeed_changed),label_vehiclespeed);
+		g_signal_connect(h1,"changed",G_CALLBACK(on_dashboard_draw_changed),drawingarea_dashboard);
+		g_signal_connect(s1,"changed",G_CALLBACK(on_dashboard_draw_changed),drawingarea_dashboard);
+
+		/*create another thread to read canbus*/
+
+		readcanbus=g_thread_create(read_canbus,(gpointer)&dashboard_data,FALSE, &error);
+		if(!readcanbus){
+			g_print("Error %s\n",error->message);
+		}
+
+		/*display the views*/
+		gtk_widget_show(GTK_WIDGET(window_enginespeed));
+		gtk_widget_show(GTK_WIDGET(window_vehiclespeed));
+		gtk_widget_show(GTK_WIDGET(window_dashboard));
+
+		/*event loop*/
+		gtk_main();
+
+		gdk_threads_leave();
+
+		/*cleaning up*/
+		g_object_unref(h1);
+		g_object_unref(s1);
+		g_object_unref(G_OBJECT(builder));
+		g_object_unref(dashboard_data.cursor_big);
+		g_object_unref(dashboard_data.cursor_small);
+		g_object_unref(dashboard_data.dashboard_back);
+		g_object_unref(dashboard_data.dashboard_top);
+
+		exit(EXIT_SUCCESS);
 }

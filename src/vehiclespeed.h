@@ -1,13 +1,13 @@
 /*
- * speed.h
+ * vehiclespeed.h
  *
  *  Created on: Jun 20, 2011
  *      Author: mathieu
  */
 
 
-#ifndef SPEED_CLASS_H_
-#define SPEED_CLASS_H_
+#ifndef VEHICLESPEED_CLASS_H_
+#define VEHICLESPEED_CLASS_H_
 
 #include <glib-object.h>
 
@@ -15,27 +15,27 @@
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // GTYPE BOILERPLATE
 // ////////////////////////////////////////////////////////////////////////////////////////////////*/
-#define SPEED(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_SPEED, Speed))
-#define SPEED_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_SPEED, SpeedClass))
-#define IS_SPEED(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_SPEED))
-#define IS_SPEED_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_SPEED))
-#define SPEED_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_SPEED, SpeedClass))
-#define TYPE_SPEED (speed_get_type())
+#define VEHICLESPEED(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_VEHICLESPEED, Vehiclespeed))
+#define VEHICLESPEED_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_VEHICLESPEED, VehiclespeedClass))
+#define IS_VEHICLESPEED(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_VEHICLESPEED))
+#define IS_VEHICLESPEED_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_VEHICLESPEED))
+#define VEHICLESPEED_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_VEHICLESPEED, VehiclespeedClass))
+#define TYPE_VEHICLESPEED (vehiclespeed_get_type())
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // CLASS CONSTANTS DEFINITIONS
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-#define MAX_SPEED 25
+#define MAX_VEHICLESPEED 160
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE STRUCTURE PROTOTYPE
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-typedef struct _SpeedPrivate SpeedPrivate;
+typedef struct _VehiclespeedPrivate VehiclespeedPrivate;
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // INSTANCE STRUCTURE
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-typedef struct _Speed
+typedef struct _Vehiclespeed
 {
 	GObject parent_instance;
 	/*< public >*/
@@ -43,12 +43,12 @@ typedef struct _Speed
 	/*< private >*/
 	/* may be a pointer to a private structure. _GET_PRIVATE macro in .c is prefered !*/
 
-} Speed;
+} Vehiclespeed;
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // CLASS STRUCTURE
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-typedef struct _SpeedClass
+typedef struct _VehiclespeedClass
 {
 	GObjectClass parent_class;
 
@@ -56,12 +56,12 @@ typedef struct _SpeedClass
 
 	/* virtual public methods */
 
-} SpeedClass;
+} VehiclespeedClass;
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // PUBLIC METHODS PROTOTYPES
 // ///////////////////////////////////////////////////////////////////////////////////////////////*/
-gint speed_get (Speed* sp);
-void speed_set (Speed* sp, gint value);
+gint vehiclespeed_get (Vehiclespeed* sp);
+void vehiclespeed_set (Vehiclespeed* sp, gint value);
 
-#endif /* SPEED_CLASS_H_ */
+#endif /* VEHICLESPEED_CLASS_H_ */
