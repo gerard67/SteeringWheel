@@ -19,10 +19,13 @@
 
 #include <math.h>
 
-#include <gtk-3.0/gtk/gtk.h>
+#include <gtk/gtk.h>
 #include <cairo/cairo.h>
-#include <librsvg-2.0/librsvg/rsvg.h>
-#include <librsvg-2.0/librsvg/rsvg-cairo.h>
+#include <clutter-gtk/clutter-gtk.h>
+#include <librsvg/rsvg.h>
+#include <librsvg/rsvg-cairo.h>
+#include <champlain-gtk/champlain-gtk.h>
+#include <champlain/champlain.h>
 
 #include "enginespeed.h"
 #include "vehiclespeed.h"
@@ -36,8 +39,8 @@ volatile int STOP=FALSE;
 
 typedef struct _Dashboard_data
 {
-	Enginespeed *h;
-	Vehiclespeed *s;
+	Enginespeed *es;
+	Vehiclespeed *vs;
 	RsvgHandle *cursor_big;
 	RsvgHandle *cursor_small;
 	RsvgHandle *dashboard_back;
@@ -50,8 +53,8 @@ static gboolean MOUSE_PRESSED=FALSE;
 int
 read_canbus(Dashboard_data *dashboard_data )
 {
-	Enginespeed *h1=dashboard_data->h;
-	Vehiclespeed *s1=dashboard_data->s;
+	Enginespeed *h1=dashboard_data->es;
+	Vehiclespeed *s1=dashboard_data->vs;
 
 	int fd,res,regcom;
 	regex_t reg_speed;
@@ -62,6 +65,7 @@ read_canbus(Dashboard_data *dashboard_data )
 	char str_esp[5]="1",str_vsp[5]="1";
 
 	//gdk_threads_enter();
+
 
 	printf("-- TESTING USB-TO-SERIAL PORT --\n");
 	fd = open(MODEMDEVICE, O_RDONLY | O_NOCTTY);
@@ -184,8 +188,8 @@ dashboard_draw(GtkWidget *widget, cairo_t *cr, Dashboard_data *user_data)
 	const gint RADIUS=6;
 	gdouble width, height,drawing_scale;
 	guint draw_height,draw_width;
-	Enginespeed *h1=user_data->h;
-	Vehiclespeed *s1=user_data->s;
+	Enginespeed *h1=user_data->es;
+	Vehiclespeed *s1=user_data->vs;
 
 	width=307;
 	height=178;
@@ -235,12 +239,19 @@ main(int argc,char *argv[]) {
 		enginespeed_set(h1,1);
 		vehiclespeed_set(s1,1);
 
+		/*Champlain view*/
+		ChamplainView *map_view;
+
+
+
 		/*GTK construct ...*/
 		GtkBuilder *builder;
 		GtkWindow *window_enginespeed,*window_dashboard,*window_vehiclespeed;
 		GtkLabel *label_vehiclespeed,*label_enginespeed;
 		GtkButton *button[4];
 		GtkDrawingArea *drawingarea_dashboard;
+		GtkAlignment *mapalign;
+		GtkWidget *map_widget;
 
 		if(!g_thread_supported()){
 			g_thread_init(NULL);
@@ -250,7 +261,7 @@ main(int argc,char *argv[]) {
 
 		gdk_threads_enter();
 
-		gtk_init(&argc, &argv);
+		gtk_clutter_init(&argc, &argv);
 
 		builder=gtk_builder_new();
 		if(!gtk_builder_add_from_file(builder,DATADIR "/dashboard.glade",&error)){
@@ -266,10 +277,23 @@ main(int argc,char *argv[]) {
 		label_enginespeed = GTK_LABEL(gtk_builder_get_object(builder,"label_enginespeed"));
 		label_vehiclespeed = GTK_LABEL(gtk_builder_get_object(builder,"label_vehiclespeed"));
 		drawingarea_dashboard = GTK_DRAWING_AREA(gtk_builder_get_object(builder,"drawingarea_dashboard"));
+		mapalign = GTK_ALIGNMENT(gtk_builder_get_object(builder,"alignment4"));
 		button[0]=GTK_BUTTON(gtk_builder_get_object(builder,"button_enginespeed_plus"));
 		button[1]=GTK_BUTTON(gtk_builder_get_object(builder,"button_enginespeed_moins"));
 		button[2]=GTK_BUTTON(gtk_builder_get_object(builder,"button_vehiclespeed_plus"));
 		button[3]=GTK_BUTTON(gtk_builder_get_object(builder,"button_vehiclespeed_moins"));
+
+		/*preparing map widget*/
+		map_widget=gtk_champlain_embed_new();
+		map_view=gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(map_widget));
+		champlain_view_center_on(CHAMPLAIN_VIEW(map_view),48.895, 2.287222);
+		champlain_view_set_zoom_level(CHAMPLAIN_VIEW(map_view),12);
+
+		gtk_widget_set_size_request(map_widget,307,250);
+		gtk_container_add(GTK_CONTAINER(mapalign),map_widget);
+
+
+
 
 
 		/* connecting signals */
@@ -279,8 +303,8 @@ main(int argc,char *argv[]) {
 		g_signal_connect(window_vehiclespeed,"destroy",G_CALLBACK(gtk_main_quit),NULL);
 
 		Dashboard_data dashboard_data;
-		dashboard_data.h=h1;
-		dashboard_data.s=s1;
+		dashboard_data.es=h1;
+		dashboard_data.vs=s1;
 		dashboard_data.cursor_big=rsvg_handle_new_from_file(DATADIR "/counter_cursor_big.svg",&error);
 		dashboard_data.cursor_small=rsvg_handle_new_from_file(DATADIR "/counter_cursor_small.svg",&error);
 		dashboard_data.dashboard_back=rsvg_handle_new_from_file(DATADIR "/dashboard_back.svg",&error);
@@ -299,6 +323,7 @@ main(int argc,char *argv[]) {
 		g_signal_connect(h1,"changed",G_CALLBACK(on_dashboard_draw_changed),drawingarea_dashboard);
 		g_signal_connect(s1,"changed",G_CALLBACK(on_dashboard_draw_changed),drawingarea_dashboard);
 
+
 		/*create another thread to read canbus*/
 
 		readcanbus=g_thread_create(read_canbus,(gpointer)&dashboard_data,FALSE, &error);
@@ -309,7 +334,9 @@ main(int argc,char *argv[]) {
 		/*display the views*/
 		gtk_widget_show(GTK_WIDGET(window_enginespeed));
 		gtk_widget_show(GTK_WIDGET(window_vehiclespeed));
-		gtk_widget_show(GTK_WIDGET(window_dashboard));
+		gtk_widget_show_all(GTK_WIDGET(window_dashboard));
+
+
 
 		/*event loop*/
 		gtk_main();

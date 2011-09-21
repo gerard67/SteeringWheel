@@ -1,12 +1,12 @@
-bin_PROGRAMS=heading headingcli
+bin_PROGRAMS=dashboard dashboardcli
 
-headingcli_SOURCES=src/gobject_cli.c src/heading.h src/heading.c src/speed.h src/speed.c
-heading_SOURCES=src/gobject_gui.c src/heading.h src/heading.c src/speed.h src/speed.c
+dashboardcli_SOURCES=src/gobject_cli.c src/enginespeed.h src/enginespeed.c src/vehiclespeed.h src/vehiclespeed.c
+dashboard_SOURCES=src/gobject_gui.c src/enginespeed.h src/enginespeed.c src/vehiclespeed.h src/vehiclespeed.c
 
-headingextradir = $(datadir)/@PACKAGE@
-headingextra_DATA = src/heading.glade
+dashboardextradir = $(datadir)/@PACKAGE@
+dashboardextra_DATA = src/dashboard.glade src/dashboard_top.svg src/dashboard_back.svg src/dashboard_cursor_small.svg src/dashboard_cursor_big.svg
 
-headingcli_CFLAGS = $(GOBJECT_CFLAGS)
-heading_CFLAGS = $(GOBJECT_CFLAGS) $(GTK_CFLAGS) $(CAIRO_CFLAGS) -export-dynamic -DDATADIR=\"$(datadir)/@PACKAGE@\"
-headingcli_LDADD = $(GOBJECT_LIBS)
-heading_LDADD = $(GOBJECT_LIBS) $(GTK_LIBS) $(CAIRO_LIBS)
+dashboardcli_CFLAGS = $(GOBJECT_CFLAGS)
+dashboard_CFLAGS = $(GOBJECT_CFLAGS) $(CLUTTERGTK_CFLAGS) $(GTK_CFLAGS) $(CAIRO_CFLAGS) $(LIBRSVG_CFLAGS) $(CHAMPLAINGTK_CFLAGS) -export-dynamic -DDATADIR=\"$(datadir)/@PACKAGE@\"
+dashboardcli_LDADD = $(GOBJECT_LIBS)
+dashboard_LDADD = $(GOBJECT_LIBS) $(CLUTTERGTK_LIBS) $(GTK_LIBS) $(CAIRO_LIBS) $(LIBRSVG_LIBS) $(CHAMPLAINGTK_LIBS)
