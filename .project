@@ -6,6 +6,11 @@
 	</projects>
 	<buildSpec>
 		<buildCommand>
+			<name>org.eclipse.dltk.core.scriptbuilder</name>
+			<arguments>
+			</arguments>
+		</buildCommand>
+		<buildCommand>
 			<name>org.eclipse.linuxtools.cdt.autotools.core.genmakebuilderV2</name>
 			<arguments>
 			</arguments>
@@ -35,7 +40,7 @@
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.buildLocation</key>
-					<value>${workspace_loc:/gobject_tutorial}/</value>
+					<value>${workspace_loc:/gobject_tutorial}</value>
 				</dictionary>
 				<dictionary>
 					<key>org.eclipse.cdt.make.core.contents</key>
@@ -79,5 +84,6 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 		<nature>org.eclipse.linuxtools.cdt.autotools.core.autotoolsNatureV2</nature>
+		<nature>net.sourceforge.shelled.core.nature</nature>
 	</natures>
 </projectDescription>

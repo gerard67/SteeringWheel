@@ -29,6 +29,7 @@
 
 #include "enginespeed.h"
 #include "vehiclespeed.h"
+#include "locationdata.h"
 
 /*parameters to read serial scanbus*/
 #define BAUDRATE B9600
@@ -178,6 +179,16 @@ on_vehiclespeed_changed(Vehiclespeed *s,GtkLabel *label){
 }
 
 void
+on_locationdata_changed(Locationdata *l,ChamplainPathLayer *map_path_layer){
+	printf("lat: %f - lon: %f\n",(float)locationdata_get_current_latitude(l),(float)locationdata_get_current_longitude(l));
+	champlain_path_layer_add_node(map_path_layer,
+			CHAMPLAIN_LOCATION(champlain_coordinate_new_full(
+					locationdata_get_current_latitude(l),
+					locationdata_get_current_longitude(l)
+			)));
+}
+
+void
 on_dashboard_draw_changed(GObject *obj,GtkDrawingArea *drawing){
 	gtk_widget_queue_draw(GTK_WIDGET(drawing));
 }
@@ -228,21 +239,24 @@ int
 main(int argc,char *argv[]) {
 
 		GError *error=NULL;
-		GThread *readcanbus;
+		GThread *readcanbus,*readlocationdata;
 
 		/*Gobject constructs*/
 		g_type_init();
 		Enginespeed *h1=NULL;
 		Vehiclespeed *s1=NULL;
+		Locationdata *l1=NULL;
 		s1=g_object_new(TYPE_VEHICLESPEED,NULL);
 		h1=g_object_new(TYPE_ENGINESPEED,NULL);
+		l1=g_object_new(TYPE_LOCATIONDATA,NULL);
 		enginespeed_set(h1,1);
 		vehiclespeed_set(s1,1);
 
+
+
 		/*Champlain view*/
 		ChamplainView *map_view;
-
-
+		ChamplainPathLayer *map_path_layer;
 
 		/*GTK construct ...*/
 		GtkBuilder *builder;
@@ -253,12 +267,9 @@ main(int argc,char *argv[]) {
 		GtkAlignment *mapalign;
 		GtkWidget *map_widget;
 
-		if(!g_thread_supported()){
-			g_thread_init(NULL);
-		}
+		if(!g_thread_supported()){g_thread_init(NULL);}
 
 		gdk_threads_init();
-
 		gdk_threads_enter();
 
 		gtk_clutter_init(&argc, &argv);
@@ -286,15 +297,23 @@ main(int argc,char *argv[]) {
 		/*preparing map widget*/
 		map_widget=gtk_champlain_embed_new();
 		map_view=gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(map_widget));
+
+		ChamplainMapSourceFactory *factory = champlain_map_source_factory_dup_default ();
+		champlain_view_set_map_source(CHAMPLAIN_VIEW(map_view),champlain_map_source_factory_create(factory,CHAMPLAIN_MAP_SOURCE_OSM_MAPQUEST));
+
 		champlain_view_center_on(CHAMPLAIN_VIEW(map_view),48.895, 2.287222);
-		champlain_view_set_zoom_level(CHAMPLAIN_VIEW(map_view),12);
+		champlain_view_set_zoom_level(CHAMPLAIN_VIEW(map_view),11);
+
+		/*path between Levallois and Paris*/
+		map_path_layer=champlain_path_layer_new();
+		champlain_path_layer_add_node(map_path_layer,CHAMPLAIN_LOCATION(champlain_coordinate_new_full(48.895, 2.287222)));
+		champlain_path_layer_add_node(map_path_layer,CHAMPLAIN_LOCATION(champlain_coordinate_new_full(48.856667, 2.350833)));
+		champlain_path_layer_set_stroke_width(map_path_layer,5.0);
+		champlain_view_add_layer(CHAMPLAIN_VIEW(map_view),CHAMPLAIN_LAYER(map_path_layer));
+
 
 		gtk_widget_set_size_request(map_widget,307,250);
 		gtk_container_add(GTK_CONTAINER(mapalign),map_widget);
-
-
-
-
 
 		/* connecting signals */
 		/*control signals*/
@@ -322,14 +341,15 @@ main(int argc,char *argv[]) {
 		g_signal_connect(s1,"changed",G_CALLBACK(on_vehiclespeed_changed),label_vehiclespeed);
 		g_signal_connect(h1,"changed",G_CALLBACK(on_dashboard_draw_changed),drawingarea_dashboard);
 		g_signal_connect(s1,"changed",G_CALLBACK(on_dashboard_draw_changed),drawingarea_dashboard);
+		g_signal_connect(l1,"changed",G_CALLBACK(on_locationdata_changed),map_path_layer);
 
 
 		/*create another thread to read canbus*/
 
 		readcanbus=g_thread_create(read_canbus,(gpointer)&dashboard_data,FALSE, &error);
-		if(!readcanbus){
-			g_print("Error %s\n",error->message);
-		}
+		if(!readcanbus){g_print("Error %s\n",error->message);}
+		readlocationdata=g_thread_create(locationdata_startreplay,LOCATIONDATA(l1),FALSE, &error);
+		if(!readlocationdata){g_print("Error %s\n",error->message);}
 
 		/*display the views*/
 		gtk_widget_show(GTK_WIDGET(window_enginespeed));

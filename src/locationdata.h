@@ -1,0 +1,77 @@
+/*
+ * locationdata.h
+ *
+ *  Created on: Jun 20, 2011
+ *      Author: mathieu
+ */
+
+
+#ifndef LOCATIONDATA_CLASS_H_
+#define LOCATIONDATA_CLASS_H_
+
+#include <glib-object.h>
+#include <mysql.h>
+
+
+
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+// GTYPE BOILERPLATE
+// ////////////////////////////////////////////////////////////////////////////////////////////////*/
+#define LOCATIONDATA(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), TYPE_LOCATIONDATA, Locationdata))
+#define LOCATIONDATA_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), TYPE_LOCATIONDATA, LocationdataClass))
+#define IS_LOCATIONDATA(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), TYPE_LOCATIONDATA))
+#define IS_LOCATIONDATA_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), TYPE_LOCATIONDATA))
+#define LOCATIONDATA_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), TYPE_LOCATIONDATA, LocationdataClass))
+#define TYPE_LOCATIONDATA (locationdata_get_type())
+
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+// CLASS CONSTANTS DEFINITIONS
+// ///////////////////////////////////////////////////////////////////////////////////////////////*/
+#define MAX_LOCATIONDATA 3000
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+// PRIVATE STRUCTURE PROTOTYPE
+// ///////////////////////////////////////////////////////////////////////////////////////////////*/
+typedef struct _LocationdataPrivate LocationdataPrivate;
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+// INSTANCE STRUCTURE
+// ///////////////////////////////////////////////////////////////////////////////////////////////*/
+typedef struct _Locationdata
+{
+	GObject parent_instance;
+	/*< public >*/
+
+	/*< private >*/
+	/* may be a pointer to a private structure. _GET_PRIVATE macro in .c is prefered !*/
+
+} Locationdata;
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+// CLASS STRUCTURE
+// ///////////////////////////////////////////////////////////////////////////////////////////////*/
+typedef struct _LocationdataClass
+{
+	GObjectClass parent_class;
+
+	/* class members */
+
+	/* virtual public methods */
+
+}LocationdataClass;
+
+/* /////////////////////////////////////////////////////////////////////////////////////////////////
+// PUBLIC METHODS PROTOTYPES
+// ///////////////////////////////////////////////////////////////////////////////////////////////*/
+void
+locationdata_startreplay (Locationdata* ld);
+void
+locationdata_setreplayspeed (Locationdata* ld, gdouble replayspeed);
+gdouble
+locationdata_get_current_latitude(Locationdata *ld);
+gdouble
+locationdata_get_current_longitude(Locationdata *ld);
+
+#endif /* LOCATIONDATA_CLASS_H_ */
