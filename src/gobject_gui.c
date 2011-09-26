@@ -19,10 +19,10 @@
 
 #include <math.h>
 
-#include <gtk-3.0/gtk/gtk.h>
+#include <gtk/gtk.h>
 #include <cairo/cairo.h>
-#include <librsvg-2.0/librsvg/rsvg.h>
-#include <librsvg-2.0/librsvg/rsvg-cairo.h>
+#include <librsvg/rsvg.h>
+#include <librsvg/rsvg-cairo.h>
 
 #include "enginespeed.h"
 #include "vehiclespeed.h"
