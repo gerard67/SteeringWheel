@@ -7,6 +7,7 @@
 
 #include "locationdata.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 /* /////////////////////////////////////////////////////////////////////////////////////////////////
 // PRIVATE STRUCTURE + ACCESS MACRO
@@ -89,8 +90,8 @@ locationdata_init (Locationdata *self)
 	/* Initialize public fields */
 
 	/* Initialize private fields */
-	priv->conn=connect_to_database("localhost","mathieu","");
-	priv->replayspeed=1.;
+	priv->conn=connect_to_database("localhost","mathieu","gerard67");
+	priv->replayspeed=10.;
 	priv->longitude=0.;
 	priv->latitude=0.;
 }
@@ -128,9 +129,9 @@ locationdata_startreplay (Locationdata* ld)
 
 	struct tm current;
 	/*actual process time*/
-	time_t starttime=NULL, currenttime=NULL;
+	time_t starttime=-1, currenttime=-1;
 	/*replay times*/
-	time_t startreplay=NULL, currentreplay=NULL;
+	time_t startreplay=-1, currentreplay=-1;
 
 	int i;
 
@@ -138,7 +139,7 @@ locationdata_startreplay (Locationdata* ld)
 	result = mysql_store_result(priv->conn);
 
 	while((row=mysql_fetch_row(result))){
-		if(starttime==NULL){
+		if(starttime==-1){
 			strptime(row[0],"%Y-%m-%d %H:%M:%S",&current);
 			startreplay=mktime(&current);
 			starttime=time(NULL);

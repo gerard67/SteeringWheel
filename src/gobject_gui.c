@@ -193,6 +193,50 @@ on_dashboard_draw_changed(GObject *obj,GtkDrawingArea *drawing){
 	gtk_widget_queue_draw(GTK_WIDGET(drawing));
 }
 
+
+
+
+static ClutterActor *
+make_button (char *text)
+{
+  ClutterActor *button, *button_bg, *button_text;
+  ClutterColor white = { 0xff, 0xff, 0xff, 0xff };
+  ClutterColor black = { 0x00, 0x00, 0x00, 0xff };
+  gfloat width, height;
+
+  button = clutter_group_new ();
+
+  button_bg = clutter_rectangle_new_with_color (&white);
+  clutter_container_add_actor (CLUTTER_CONTAINER (button), button_bg);
+  clutter_actor_set_opacity (button_bg, 0xcc);
+
+  button_text = clutter_text_new_full ("Sans 10", text, &black);
+  clutter_container_add_actor (CLUTTER_CONTAINER (button), button_text);
+  clutter_actor_get_size (button_text, &width, &height);
+
+  clutter_actor_set_size (button_bg, width + 10 * 2, height + 10 * 2);
+  clutter_actor_set_position (button_bg, 0, 0);
+  clutter_actor_set_position (button_text, 10, 10);
+
+  return button;
+}
+
+
+static gboolean
+zoom_in(G_GNUC_UNUSED ClutterActor *actor,G_GNUC_UNUSED ClutterButtonEvent *event, ChamplainView *view)
+{
+	champlain_view_zoom_in(view);
+	return TRUE;
+}
+
+static gboolean
+zoom_out(G_GNUC_UNUSED ClutterActor *actor,G_GNUC_UNUSED ClutterButtonEvent *event, ChamplainView *view)
+{
+	champlain_view_zoom_out(view);
+	return TRUE;
+}
+
+
 gboolean
 dashboard_draw(GtkWidget *widget, cairo_t *cr, Dashboard_data *user_data)
 {
@@ -258,6 +302,9 @@ main(int argc,char *argv[]) {
 		ChamplainView *map_view;
 		ChamplainPathLayer *map_path_layer;
 
+		/* Clutter actors displayed in the map */
+		ClutterActor *cbuttons,*cbutton, *actor,*stage;
+
 		/*GTK construct ...*/
 		GtkBuilder *builder;
 		GtkWindow *window_enginespeed,*window_dashboard,*window_vehiclespeed;
@@ -266,6 +313,8 @@ main(int argc,char *argv[]) {
 		GtkDrawingArea *drawingarea_dashboard;
 		GtkAlignment *mapalign;
 		GtkWidget *map_widget;
+
+
 
 		if(!g_thread_supported()){g_thread_init(NULL);}
 
@@ -295,11 +344,36 @@ main(int argc,char *argv[]) {
 		button[3]=GTK_BUTTON(gtk_builder_get_object(builder,"button_vehiclespeed_moins"));
 
 		/*preparing map widget*/
+		int width=0,total_width=0;
+		stage=clutter_stage_get_default();
+		clutter_actor_set_size(stage,307,250);
+
+
 		map_widget=gtk_champlain_embed_new();
 		map_view=gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(map_widget));
 
+		cbuttons = clutter_group_new ();
+		clutter_actor_set_position (cbuttons,10,10);
+		cbutton=make_button("Zoom In");
+		clutter_container_add_actor(CLUTTER_CONTAINER(cbuttons),cbutton);
+		clutter_actor_set_reactive(cbutton, TRUE);
+		clutter_actor_get_size(cbutton,&width,NULL);
+		total_width+=width+10;
+		g_signal_connect(cbutton,"button-release-event", G_CALLBACK(zoom_in),map_view);
+
+		clutter_actor_set_position (cbuttons, 10,10);
+		cbutton=make_button("Zoom Out");
+		clutter_container_add_actor(CLUTTER_CONTAINER(cbuttons),cbutton);
+		clutter_actor_set_reactive(cbutton, TRUE);
+		clutter_actor_get_size(cbutton,&width,NULL);
+		total_width+=width+10;
+		g_signal_connect(cbutton,"button-release-event", G_CALLBACK(zoom_out),map_view);
+
+		clutter_container_add_actor(CLUTTER_CONTAINER(map_view),cbuttons);
+
+
 		ChamplainMapSourceFactory *factory = champlain_map_source_factory_dup_default ();
-		champlain_view_set_map_source(CHAMPLAIN_VIEW(map_view),champlain_map_source_factory_create(factory,CHAMPLAIN_MAP_SOURCE_OSM_MAPQUEST));
+		champlain_view_set_map_source(CHAMPLAIN_VIEW(map_view),champlain_map_source_factory_create(factory,CHAMPLAIN_MAP_SOURCE_OSM_MAPNIK));
 
 		champlain_view_center_on(CHAMPLAIN_VIEW(map_view),48.895, 2.287222);
 		champlain_view_set_zoom_level(CHAMPLAIN_VIEW(map_view),11);
