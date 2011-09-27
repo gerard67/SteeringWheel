@@ -193,6 +193,11 @@ on_dashboard_draw_changed(GObject *obj,GtkDrawingArea *drawing){
 	gtk_widget_queue_draw(GTK_WIDGET(drawing));
 }
 
+void
+on_stage_allocation_changed (ClutterActor *actor, const ClutterActorBox  *allocation, ClutterAllocationFlags  flags, gpointer mapactor){
+	clutter_actor_set_size(CLUTTER_ACTOR(mapactor),clutter_actor_box_get_width(allocation),clutter_actor_box_get_height(allocation));
+}
+
 
 
 
@@ -299,11 +304,13 @@ main(int argc,char *argv[]) {
 
 
 		/*Champlain view*/
-		ChamplainView *map_view;
+		ChamplainView *mapactor;
 		ChamplainPathLayer *map_path_layer;
+		ChamplainMapSourceFactory *factory;
 
 		/* Clutter actors displayed in the map */
-		ClutterActor *cbuttons,*cbutton, *actor,*stage;
+		ClutterActor *cbuttons,*cbutton[2],*stage;
+		GtkWidget *stagewidget;
 
 		/*GTK construct ...*/
 		GtkBuilder *builder;
@@ -312,7 +319,6 @@ main(int argc,char *argv[]) {
 		GtkButton *button[4];
 		GtkDrawingArea *drawingarea_dashboard;
 		GtkAlignment *mapalign;
-		GtkWidget *map_widget;
 
 
 
@@ -343,51 +349,39 @@ main(int argc,char *argv[]) {
 		button[2]=GTK_BUTTON(gtk_builder_get_object(builder,"button_vehiclespeed_plus"));
 		button[3]=GTK_BUTTON(gtk_builder_get_object(builder,"button_vehiclespeed_moins"));
 
-		/*preparing map widget*/
-		int width=0,total_width=0;
-		stage=clutter_stage_get_default();
-		clutter_actor_set_size(stage,307,250);
 
+		/*preparing the clutter stage*/
+		stagewidget=gtk_clutter_embed_new();
+		gtk_widget_set_size_request(stagewidget,307,250);
+		stage=gtk_clutter_embed_get_stage(GTK_CLUTTER_EMBED(stagewidget));
+		ClutterColor stage_color = { 0xff, 0xff, 0xff, 0xff }; //White
+		clutter_stage_set_color(CLUTTER_STAGE(stage),&stage_color);
 
-		map_widget=gtk_champlain_embed_new();
-		map_view=gtk_champlain_embed_get_view(GTK_CHAMPLAIN_EMBED(map_widget));
+		/*preparing the map actor*/
+		mapactor = CHAMPLAIN_VIEW(champlain_view_new());
+		factory = champlain_map_source_factory_dup_default();
+		champlain_view_set_map_source(mapactor,champlain_map_source_factory_create(factory,CHAMPLAIN_MAP_SOURCE_OSM_MAPNIK));
+		map_path_layer=champlain_path_layer_new();
+		champlain_path_layer_set_stroke_width(map_path_layer,5.0);
+		champlain_view_add_layer(mapactor,CHAMPLAIN_LAYER(map_path_layer));
+		clutter_container_add_actor (CLUTTER_CONTAINER(stage), CLUTTER_ACTOR(mapactor));
 
+		/*zoom IN/OUT actors buttons (very basic)*/
 		cbuttons = clutter_group_new ();
 		clutter_actor_set_position (cbuttons,10,10);
-		cbutton=make_button("Zoom In");
-		clutter_container_add_actor(CLUTTER_CONTAINER(cbuttons),cbutton);
-		clutter_actor_set_reactive(cbutton, TRUE);
-		clutter_actor_get_size(cbutton,&width,NULL);
-		total_width+=width+10;
-		g_signal_connect(cbutton,"button-release-event", G_CALLBACK(zoom_in),map_view);
+		cbutton[0]=make_button("Zoom In");
+		cbutton[1]=make_button("Zoom Out");
+		clutter_actor_set_reactive(cbutton[0], TRUE);
+		clutter_actor_set_reactive(cbutton[1], TRUE);
+		clutter_actor_set_position(cbutton[1],clutter_actor_get_width(cbutton[0])+10,0);
+		clutter_container_add_actor(CLUTTER_CONTAINER(cbuttons),cbutton[0]);
+		clutter_container_add_actor(CLUTTER_CONTAINER(cbuttons),cbutton[1]);
+		clutter_container_add_actor(CLUTTER_CONTAINER(stage),cbuttons);
 
-		clutter_actor_set_position (cbuttons, 10,10);
-		cbutton=make_button("Zoom Out");
-		clutter_container_add_actor(CLUTTER_CONTAINER(cbuttons),cbutton);
-		clutter_actor_set_reactive(cbutton, TRUE);
-		clutter_actor_get_size(cbutton,&width,NULL);
-		total_width+=width+10;
-		g_signal_connect(cbutton,"button-release-event", G_CALLBACK(zoom_out),map_view);
-
-		clutter_container_add_actor(CLUTTER_CONTAINER(map_view),cbuttons);
+		/*display the stage at the right UI location*/
+		gtk_container_add(GTK_CONTAINER(mapalign),stagewidget);
 
 
-		ChamplainMapSourceFactory *factory = champlain_map_source_factory_dup_default ();
-		champlain_view_set_map_source(CHAMPLAIN_VIEW(map_view),champlain_map_source_factory_create(factory,CHAMPLAIN_MAP_SOURCE_OSM_MAPNIK));
-
-		champlain_view_center_on(CHAMPLAIN_VIEW(map_view),48.895, 2.287222);
-		champlain_view_set_zoom_level(CHAMPLAIN_VIEW(map_view),11);
-
-		/*path between Levallois and Paris*/
-		map_path_layer=champlain_path_layer_new();
-		champlain_path_layer_add_node(map_path_layer,CHAMPLAIN_LOCATION(champlain_coordinate_new_full(48.895, 2.287222)));
-		champlain_path_layer_add_node(map_path_layer,CHAMPLAIN_LOCATION(champlain_coordinate_new_full(48.856667, 2.350833)));
-		champlain_path_layer_set_stroke_width(map_path_layer,5.0);
-		champlain_view_add_layer(CHAMPLAIN_VIEW(map_view),CHAMPLAIN_LAYER(map_path_layer));
-
-
-		gtk_widget_set_size_request(map_widget,307,250);
-		gtk_container_add(GTK_CONTAINER(mapalign),map_widget);
 
 		/* connecting signals */
 		/*control signals*/
@@ -402,15 +396,23 @@ main(int argc,char *argv[]) {
 		dashboard_data.cursor_small=rsvg_handle_new_from_file(DATADIR "/counter_cursor_small.svg",&error);
 		dashboard_data.dashboard_back=rsvg_handle_new_from_file(DATADIR "/dashboard_back.svg",&error);
 		dashboard_data.dashboard_top=rsvg_handle_new_from_file(DATADIR "/dashboard_top.svg",&error);
-		g_signal_connect(drawingarea_dashboard,"draw",G_CALLBACK(dashboard_draw),&dashboard_data);
 
-		/*signals from the views to the model*/
+
+		/*other signals (like view to view ..)*/
+		g_signal_connect(drawingarea_dashboard,"draw",G_CALLBACK(dashboard_draw),&dashboard_data);
+		g_signal_connect(stage,"allocation-changed",G_CALLBACK(on_stage_allocation_changed),mapactor);
+
+
+		/*signals from the views to the models*/
 		g_signal_connect(button[0],"clicked",G_CALLBACK(on_enginespeed_plus),h1);
 		g_signal_connect(button[1],"clicked",G_CALLBACK(on_enginespeed_moins),h1);
 		g_signal_connect(button[2],"clicked",G_CALLBACK(on_vehiclespeed_plus),s1);
 		g_signal_connect(button[3],"clicked",G_CALLBACK(on_vehiclespeed_moins),s1);
+		g_signal_connect(cbutton[1],"button-release-event", G_CALLBACK(zoom_out),mapactor);
+		g_signal_connect(cbutton[0],"button-release-event", G_CALLBACK(zoom_in),mapactor);
 
-		/*signals from the model to the views*/
+
+		/*signals from the models to the views*/
 		g_signal_connect(h1,"changed",G_CALLBACK(on_enginespeed_changed),label_enginespeed);
 		g_signal_connect(s1,"changed",G_CALLBACK(on_vehiclespeed_changed),label_vehiclespeed);
 		g_signal_connect(h1,"changed",G_CALLBACK(on_dashboard_draw_changed),drawingarea_dashboard);
@@ -419,18 +421,15 @@ main(int argc,char *argv[]) {
 
 
 		/*create another thread to read canbus*/
-
-		readcanbus=g_thread_create(read_canbus,(gpointer)&dashboard_data,FALSE, &error);
+		readcanbus=g_thread_create((GThreadFunc)read_canbus,(gpointer)&dashboard_data,FALSE, &error);
 		if(!readcanbus){g_print("Error %s\n",error->message);}
-		readlocationdata=g_thread_create(locationdata_startreplay,LOCATIONDATA(l1),FALSE, &error);
+		readlocationdata=g_thread_create((GThreadFunc)locationdata_startreplay,LOCATIONDATA(l1),FALSE, &error);
 		if(!readlocationdata){g_print("Error %s\n",error->message);}
 
 		/*display the views*/
 		gtk_widget_show(GTK_WIDGET(window_enginespeed));
 		gtk_widget_show(GTK_WIDGET(window_vehiclespeed));
 		gtk_widget_show_all(GTK_WIDGET(window_dashboard));
-
-
 
 		/*event loop*/
 		gtk_main();
