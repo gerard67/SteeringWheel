@@ -292,7 +292,7 @@
 				<buildTargets>
 					<target name="install" path="src" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments/>
+						<buildArguments>V=1</buildArguments>
 						<buildTarget>install</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
@@ -300,7 +300,7 @@
 					</target>
 					<target name="distclean" path="src" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments/>
+						<buildArguments>V=1</buildArguments>
 						<buildTarget>distclean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
@@ -350,70 +350,6 @@
 						<buildCommand>make</buildCommand>
 						<buildArguments>V=1</buildArguments>
 						<buildTarget>ctags</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-enginespeed.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-enginespeed.o</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-enginespeed.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-enginespeed.obj</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-gobject_gui.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-gobject_gui.o</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-gobject_gui.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-gobject_gui.obj</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-locationdata.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-locationdata.o</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-locationdata.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-locationdata.obj</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-vehiclespeed.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-vehiclespeed.o</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-vehiclespeed.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-vehiclespeed.obj</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
@@ -562,6 +498,86 @@
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
 					</target>
+					<target name="ecodrive-ecodrive_main.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-ecodrive_main.o</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-ecodrive_main.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-ecodrive_main.obj</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-ecodrivemap.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-ecodrivemap.o</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-ecodrivemap.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-ecodrivemap.obj</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-enginespeed.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-enginespeed.o</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-enginespeed.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-enginespeed.obj</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-locationdata.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-locationdata.o</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-locationdata.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-locationdata.obj</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-vehiclespeed.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-vehiclespeed.o</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-vehiclespeed.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-vehiclespeed.obj</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
 					<target name="html" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
 						<buildArguments>V=1</buildArguments>
@@ -586,14 +602,6 @@
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
 					</target>
-					<target name="install-dashboardextraDATA" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>install-dashboardextraDATA</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
 					<target name="install-data" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
 						<buildArguments>V=1</buildArguments>
@@ -606,6 +614,14 @@
 						<buildCommand>make</buildCommand>
 						<buildArguments>V=1</buildArguments>
 						<buildTarget>install-dvi</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="install-ecodriveextraDATA" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>install-ecodriveextraDATA</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
@@ -754,10 +770,10 @@
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
 					</target>
-					<target name="uninstall-dashboardextraDATA" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+					<target name="uninstall-ecodriveextraDATA" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
 						<buildArguments>V=1</buildArguments>
-						<buildTarget>uninstall-dashboardextraDATA</buildTarget>
+						<buildTarget>uninstall-ecodriveextraDATA</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
@@ -1055,7 +1071,7 @@
 				<buildTargets>
 					<target name="install" path="src" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments/>
+						<buildArguments>V=1</buildArguments>
 						<buildTarget>install</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
@@ -1063,7 +1079,7 @@
 					</target>
 					<target name="distclean" path="src" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments/>
+						<buildArguments>V=1</buildArguments>
 						<buildTarget>distclean</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
@@ -1113,70 +1129,6 @@
 						<buildCommand>make</buildCommand>
 						<buildArguments>V=1</buildArguments>
 						<buildTarget>ctags</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-enginespeed.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-enginespeed.o</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-enginespeed.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-enginespeed.obj</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-gobject_gui.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-gobject_gui.o</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-gobject_gui.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-gobject_gui.obj</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-locationdata.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-locationdata.o</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-locationdata.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-locationdata.obj</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-vehiclespeed.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-vehiclespeed.o</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
-					<target name="dashboard-vehiclespeed.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>dashboard-vehiclespeed.obj</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
@@ -1325,6 +1277,86 @@
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
 					</target>
+					<target name="ecodrive-ecodrive_main.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-ecodrive_main.o</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-ecodrive_main.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-ecodrive_main.obj</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-ecodrivemap.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-ecodrivemap.o</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-ecodrivemap.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-ecodrivemap.obj</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-enginespeed.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-enginespeed.o</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-enginespeed.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-enginespeed.obj</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-locationdata.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-locationdata.o</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-locationdata.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-locationdata.obj</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-vehiclespeed.o" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-vehiclespeed.o</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="ecodrive-vehiclespeed.obj" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>ecodrive-vehiclespeed.obj</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
 					<target name="html" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
 						<buildArguments>V=1</buildArguments>
@@ -1349,14 +1381,6 @@
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
 					</target>
-					<target name="install-dashboardextraDATA" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-						<buildCommand>make</buildCommand>
-						<buildArguments>V=1</buildArguments>
-						<buildTarget>install-dashboardextraDATA</buildTarget>
-						<stopOnError>true</stopOnError>
-						<useDefaultCommand>true</useDefaultCommand>
-						<runAllBuilders>false</runAllBuilders>
-					</target>
 					<target name="install-data" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
 						<buildArguments>V=1</buildArguments>
@@ -1369,6 +1393,14 @@
 						<buildCommand>make</buildCommand>
 						<buildArguments>V=1</buildArguments>
 						<buildTarget>install-dvi</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="install-ecodriveextraDATA" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>V=1</buildArguments>
+						<buildTarget>install-ecodriveextraDATA</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
@@ -1517,10 +1549,10 @@
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
 					</target>
-					<target name="uninstall-dashboardextraDATA" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+					<target name="uninstall-ecodriveextraDATA" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
 						<buildArguments>V=1</buildArguments>
-						<buildTarget>uninstall-dashboardextraDATA</buildTarget>
+						<buildTarget>uninstall-ecodriveextraDATA</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>

@@ -1,6 +1,6 @@
 /*
  ============================================================================
- Name        : gobject_tutorial.c
+ Name        : ecodrive_main.c
  Author      : Mathieu Petit
  Version     :
  Copyright   : Your copyright notice
@@ -27,9 +27,10 @@
 #include <champlain-gtk/champlain-gtk.h>
 #include <champlain/champlain.h>
 
-#include "enginespeed.h"
-#include "vehiclespeed.h"
-#include "locationdata.h"
+#include "models/enginespeed.h"
+#include "models/vehiclespeed.h"
+#include "models/locationdata.h"
+#include "views/ecodrivemap.h"
 
 /*parameters to read serial scanbus*/
 #define BAUDRATE B9600
@@ -179,68 +180,15 @@ on_vehiclespeed_changed(Vehiclespeed *s,GtkLabel *label){
 }
 
 void
-on_locationdata_changed(Locationdata *l,ChamplainPathLayer *map_path_layer){
+on_locationdata_changed(Locationdata *l,Ecodrivemap *ecodrivemap){
 	printf("lat: %f - lon: %f\n",(float)locationdata_get_current_latitude(l),(float)locationdata_get_current_longitude(l));
-	champlain_path_layer_add_node(map_path_layer,
-			CHAMPLAIN_LOCATION(champlain_coordinate_new_full(
-					locationdata_get_current_latitude(l),
-					locationdata_get_current_longitude(l)
-			)));
+	ecodrivemap_path_add_node(ecodrivemap,locationdata_get_current_latitude(l),locationdata_get_current_longitude(l));
 }
 
 void
 on_dashboard_draw_changed(GObject *obj,GtkDrawingArea *drawing){
 	gtk_widget_queue_draw(GTK_WIDGET(drawing));
 }
-
-void
-on_stage_allocation_changed (ClutterActor *actor, const ClutterActorBox  *allocation, ClutterAllocationFlags  flags, gpointer mapactor){
-	clutter_actor_set_size(CLUTTER_ACTOR(mapactor),clutter_actor_box_get_width(allocation),clutter_actor_box_get_height(allocation));
-}
-
-
-
-
-static ClutterActor *
-make_button (char *text)
-{
-  ClutterActor *button, *button_bg, *button_text;
-  ClutterColor white = { 0xff, 0xff, 0xff, 0xff };
-  ClutterColor black = { 0x00, 0x00, 0x00, 0xff };
-  gfloat width, height;
-
-  button = clutter_group_new ();
-
-  button_bg = clutter_rectangle_new_with_color (&white);
-  clutter_container_add_actor (CLUTTER_CONTAINER (button), button_bg);
-  clutter_actor_set_opacity (button_bg, 0xcc);
-
-  button_text = clutter_text_new_full ("Sans 10", text, &black);
-  clutter_container_add_actor (CLUTTER_CONTAINER (button), button_text);
-  clutter_actor_get_size (button_text, &width, &height);
-
-  clutter_actor_set_size (button_bg, width + 10 * 2, height + 10 * 2);
-  clutter_actor_set_position (button_bg, 0, 0);
-  clutter_actor_set_position (button_text, 10, 10);
-
-  return button;
-}
-
-
-static gboolean
-zoom_in(G_GNUC_UNUSED ClutterActor *actor,G_GNUC_UNUSED ClutterButtonEvent *event, ChamplainView *view)
-{
-	champlain_view_zoom_in(view);
-	return TRUE;
-}
-
-static gboolean
-zoom_out(G_GNUC_UNUSED ClutterActor *actor,G_GNUC_UNUSED ClutterButtonEvent *event, ChamplainView *view)
-{
-	champlain_view_zoom_out(view);
-	return TRUE;
-}
-
 
 gboolean
 dashboard_draw(GtkWidget *widget, cairo_t *cr, Dashboard_data *user_data)
@@ -295,13 +243,14 @@ main(int argc,char *argv[]) {
 		Enginespeed *h1=NULL;
 		Vehiclespeed *s1=NULL;
 		Locationdata *l1=NULL;
+		Ecodrivemap *e1=NULL;
 		s1=g_object_new(TYPE_VEHICLESPEED,NULL);
 		h1=g_object_new(TYPE_ENGINESPEED,NULL);
 		l1=g_object_new(TYPE_LOCATIONDATA,NULL);
+
+
 		enginespeed_set(h1,1);
 		vehiclespeed_set(s1,1);
-
-
 
 		/*Champlain view*/
 		ChamplainView *mapactor;
@@ -310,15 +259,15 @@ main(int argc,char *argv[]) {
 
 		/* Clutter actors displayed in the map */
 		ClutterActor *cbuttons,*cbutton[2],*stage;
-		GtkWidget *stagewidget;
 
-		/*GTK construct ...*/
+		/*GTK construct*/
 		GtkBuilder *builder;
 		GtkWindow *window_enginespeed,*window_dashboard,*window_vehiclespeed;
 		GtkLabel *label_vehiclespeed,*label_enginespeed;
 		GtkButton *button[4];
 		GtkDrawingArea *drawingarea_dashboard;
 		GtkAlignment *mapalign;
+		GtkWidget *stagewidget;
 
 
 
@@ -330,7 +279,7 @@ main(int argc,char *argv[]) {
 		gtk_clutter_init(&argc, &argv);
 
 		builder=gtk_builder_new();
-		if(!gtk_builder_add_from_file(builder,DATADIR "/dashboard.glade",&error)){
+		if(!gtk_builder_add_from_file(builder,DATADIR "/ecodrive_ui.glade",&error)){
 			g_warning("%s",error->message);
 			g_free(error);
 			exit(EXIT_FAILURE);
@@ -350,34 +299,13 @@ main(int argc,char *argv[]) {
 		button[3]=GTK_BUTTON(gtk_builder_get_object(builder,"button_vehiclespeed_moins"));
 
 
-		/*preparing the clutter stage*/
+		/*preparing the EcoDriveMap*/
 		stagewidget=gtk_clutter_embed_new();
 		gtk_widget_set_size_request(stagewidget,307,250);
 		stage=gtk_clutter_embed_get_stage(GTK_CLUTTER_EMBED(stagewidget));
-		ClutterColor stage_color = { 0xff, 0xff, 0xff, 0xff }; //White
-		clutter_stage_set_color(CLUTTER_STAGE(stage),&stage_color);
-
-		/*preparing the map actor*/
-		mapactor = CHAMPLAIN_VIEW(champlain_view_new());
-		factory = champlain_map_source_factory_dup_default();
-		champlain_view_set_map_source(mapactor,champlain_map_source_factory_create(factory,CHAMPLAIN_MAP_SOURCE_OSM_MAPNIK));
-		map_path_layer=champlain_path_layer_new();
-		champlain_path_layer_set_stroke_width(map_path_layer,5.0);
-		champlain_view_add_layer(mapactor,CHAMPLAIN_LAYER(map_path_layer));
-		clutter_container_add_actor (CLUTTER_CONTAINER(stage), CLUTTER_ACTOR(mapactor));
-
-		/*zoom IN/OUT actors buttons (very basic)*/
-		cbuttons = clutter_group_new ();
-		clutter_actor_set_position (cbuttons,10,10);
-		cbutton[0]=make_button("Zoom In");
-		cbutton[1]=make_button("Zoom Out");
-		clutter_actor_set_reactive(cbutton[0], TRUE);
-		clutter_actor_set_reactive(cbutton[1], TRUE);
-		clutter_actor_set_position(cbutton[1],clutter_actor_get_width(cbutton[0])+10,0);
-		clutter_container_add_actor(CLUTTER_CONTAINER(cbuttons),cbutton[0]);
-		clutter_container_add_actor(CLUTTER_CONTAINER(cbuttons),cbutton[1]);
-		clutter_container_add_actor(CLUTTER_CONTAINER(stage),cbuttons);
-
+		e1=g_object_new(TYPE_ECODRIVEMAP,"MapStage",stage,NULL);
+		//g_object_get(G_OBJECT(e1),"MapStage",&stage2,NULL);
+		//printf("alpha ?? %d\n",clutter_stage_get_use_alpha(stage2));
 		/*display the stage at the right UI location*/
 		gtk_container_add(GTK_CONTAINER(mapalign),stagewidget);
 
@@ -400,7 +328,6 @@ main(int argc,char *argv[]) {
 
 		/*other signals (like view to view ..)*/
 		g_signal_connect(drawingarea_dashboard,"draw",G_CALLBACK(dashboard_draw),&dashboard_data);
-		g_signal_connect(stage,"allocation-changed",G_CALLBACK(on_stage_allocation_changed),mapactor);
 
 
 		/*signals from the views to the models*/
@@ -408,8 +335,7 @@ main(int argc,char *argv[]) {
 		g_signal_connect(button[1],"clicked",G_CALLBACK(on_enginespeed_moins),h1);
 		g_signal_connect(button[2],"clicked",G_CALLBACK(on_vehiclespeed_plus),s1);
 		g_signal_connect(button[3],"clicked",G_CALLBACK(on_vehiclespeed_moins),s1);
-		g_signal_connect(cbutton[1],"button-release-event", G_CALLBACK(zoom_out),mapactor);
-		g_signal_connect(cbutton[0],"button-release-event", G_CALLBACK(zoom_in),mapactor);
+
 
 
 		/*signals from the models to the views*/
@@ -417,7 +343,8 @@ main(int argc,char *argv[]) {
 		g_signal_connect(s1,"changed",G_CALLBACK(on_vehiclespeed_changed),label_vehiclespeed);
 		g_signal_connect(h1,"changed",G_CALLBACK(on_dashboard_draw_changed),drawingarea_dashboard);
 		g_signal_connect(s1,"changed",G_CALLBACK(on_dashboard_draw_changed),drawingarea_dashboard);
-		g_signal_connect(l1,"changed",G_CALLBACK(on_locationdata_changed),map_path_layer);
+		g_signal_connect(l1,"changed",G_CALLBACK(on_locationdata_changed),e1);
+
 
 
 		/*create another thread to read canbus*/
